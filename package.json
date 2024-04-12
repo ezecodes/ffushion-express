@@ -4,15 +4,24 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "server:dev": "node --throw-deprecation --watch-preserve-output --watch-path=./ ./bin/www --abort-on-uncaught-exception",
-    "server:production": "node bin/www"
+    "server:dev": "nodemon src/bin/www",
+    "server:production": "node src/bin/www"
   },
   "dependencies": {
     "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "helmet": "^7.1.0",
     "morgan": "^1.10.0",
+    "pg": "^8.11.5",
+    "pgvector": "^0.1.8",
+    "sequelize": "^6.37.2",
     "socket.io": "^4.7.5",
     "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "sequelize-cli": "^6.6.2"
   }
 }
