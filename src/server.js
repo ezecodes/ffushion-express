@@ -1,16 +1,39 @@
+import dontenv from "dotenv";
+dontenv.config();
 import express from "express";
-import http from "http";
-import { Server } from "socket.io";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
 import helmet from "helmet";
 import cors from "cors";
+import http from "http";
 import { v4 as uuid } from "uuid";
 import Snapshots from "./pg/models/snapshots.js";
 import { ACCOUNT_ID, AI_API_TOKEN } from "./config/index.js";
 import { dataURLtoBlob } from "./utils.js";
 import createError from "http-errors";
+import { Server } from "socket.io";
+import connectPG from "./pg/connect.js";
+const app = express();
+
+var port = process.env.PORT || 3000;
+app.set("port", port);
+
+var server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+  },
+});
 const route = express.Router();
+
+server.listen(port);
+server.on("error", (err) => {
+  throw err;
+});
+server.on("listening", () => {
+  console.log(`Server on ${port}`);
+  connectPG();
+});
 
 const BASE_API = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}`;
 
@@ -20,13 +43,6 @@ const MODELS = {
   ObjectDetection: "@cf/facebook/detr-resnet-50",
   VectorEmbedding: "@cf/baai/bge-base-en-v1.5",
 };
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-  },
-});
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(logger("dev"));
@@ -40,7 +56,6 @@ app.use(
     credentials: true,
   })
 );
-io.attach(server);
 io.on("connection", (socket) => {
   console.log("A user connected");
   socket.on("analysis", async (data) => {
