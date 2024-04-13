@@ -14,12 +14,12 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "helmet": "^7.1.0",
+    "isemail": "^3.2.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "pg": "^8.11.5",
     "pgvector": "^0.1.8",
     "sequelize": "^6.37.2",
-    "socket.io": "^4.7.5",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
