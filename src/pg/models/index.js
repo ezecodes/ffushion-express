@@ -1,10 +1,10 @@
 import { Sequelize } from "sequelize";
-import { database } from "../../config/index.js";
+import { PG } from "../../config/index.js";
 import pgvector from "pgvector/sequelize";
 pgvector.registerType(Sequelize);
 
 const sequelize = new Sequelize(
-  `postgres://${database.username}:${database.password}@${database.host}:${database.port}/${database.database}`,
+  `postgres://${PG.username}:${PG.password}@${PG.host}:${PG.port}/${PG.database}`,
   {
     logging: process.env["NODE_ENV"] === "development" ? true : false,
     pool: {

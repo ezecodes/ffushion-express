@@ -1,18 +1,26 @@
 import dontenv from "dotenv";
 dontenv.config();
 import express from "express";
-import cookieParser from "cookie-parser";
 import logger from "morgan";
 import helmet from "helmet";
 import cors from "cors";
 import http from "http";
 import { v4 as uuid } from "uuid";
-import Snapshots from "./pg/models/snapshots.js";
-import { ACCOUNT_ID, AI_API_TOKEN } from "./config/index.js";
-import { dataURLtoBlob } from "./utils.js";
 import createError from "http-errors";
 import { Server } from "socket.io";
+import {
+  compare as bcryptCompare,
+  hash as bcryptHash,
+  compareSync,
+} from "bcrypt";
+import jwt from "jsonwebtoken";
+
+import Snapshots from "./pg/models/snapshots.js";
+import Users from "./pg/models/users.js";
+import { ACCOUNT_ID, AI_API_TOKEN, JWT_SECRET } from "./config/index.js";
+import { dataURLtoBlob } from "./utils.js";
 import connectPG from "./pg/connect.js";
+
 const app = express();
 
 var port = process.env.PORT || 3000;
@@ -48,7 +56,6 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser("sec"));
 app.use(
   cors({
     methods: "GET, POST, DELETE",
@@ -57,8 +64,9 @@ app.use(
   })
 );
 io.on("connection", (socket) => {
-  console.log("A user connected");
-  socket.on("analysis", async (data) => {
+  socket.on("snapshots", async (data) => {
+    console.log(data);
+    return;
     const { videoId, snapshots } = data;
     try {
       fetchAllAnalysis(snapshots)
@@ -82,7 +90,6 @@ io.on("connection", (socket) => {
     console.log("A user disconnected");
   });
 });
-
 // function* analyseSnapshot(snapshot, snapshotsLength) {
 //   let currentPos = 0;
 //   while (currentPos < snapshotsLength) {
@@ -94,6 +101,15 @@ function fetchAllAnalysis(snapshots) {
     async (snapshot) => await fetchAnalysis(snapshot.imageDataURL)
   );
   return Promise.all(allAnalysisPromises);
+}
+function createJwtToken({ email, id }) {
+  const maxAge = "2880 mins";
+  return jwt.sign({ email, id }, JWT_SECRET, { expiresIn: maxAge });
+}
+function catchAsyncErrors(fn) {
+  return (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
 }
 
 async function fetchAnalysis(imageDataURL) {
@@ -181,6 +197,29 @@ async function createEmbeddings(snapshotDescription) {
 }
 
 route.get("/analysis", (req, res) => res.json("Hello, I am active"));
+route.post(
+  "signin",
+  catchAsyncErrors(async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || password) {
+      return res.json({
+        success: false,
+        message: "No email or password provided",
+      });
+    }
+    const find = await Users.findOne({ where: { email } });
+    if (!find) {
+      const hashed = await bcryptHash(password, 10);
+      await Users.create({ email, password: hashed });
+    } else {
+      if (!compareSync(password, find.password)) {
+        return res.status({ success: false, message: "Incorrect credentials" });
+      }
+    }
+    const authToken = createJwtToken({ email, id: find.id });
+    return res.status(200, { success: true, message: "Sign in successfull" });
+  })
+);
 
 app.use(route);
 app.use(function (req, res, next) {

@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
-const database = {
+
+const PG = {
   database: process.env.DB_NAME,
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -12,4 +13,6 @@ const database = {
 const AI_API_TOKEN = process.env.AI_API_TOKEN;
 const ACCOUNT_ID = process.env.ACCOUNT_ID;
 
-export { database, AI_API_TOKEN, ACCOUNT_ID };
+const JWT_SECRET = process.env.JWT_SECRET;
+
+export { PG, AI_API_TOKEN, ACCOUNT_ID, JWT_SECRET };
