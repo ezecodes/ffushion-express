@@ -14,5 +14,6 @@ const AI_API_TOKEN = process.env.AI_API_TOKEN;
 const ACCOUNT_ID = process.env.ACCOUNT_ID;
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const CLIENTS = process.env.CLIENTS;
 
-export { PG, AI_API_TOKEN, ACCOUNT_ID, JWT_SECRET };
+export { PG, AI_API_TOKEN, ACCOUNT_ID, JWT_SECRET, CLIENTS };
