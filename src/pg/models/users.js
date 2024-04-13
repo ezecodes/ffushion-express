@@ -12,6 +12,8 @@ const Users = sequelize.define(
     },
     email: DataTypes.STRING,
     password: DataTypes.STRING,
+    createdAt: DataTypes.DATE,
+    updatedAt: DataTypes.DATE,
   },
   {
     tableName: "users",

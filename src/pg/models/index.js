@@ -16,4 +16,8 @@ const sequelize = new Sequelize(
   }
 );
 
+// sequelize.sync({ alter: false, force: true }).then(async () => {
+//   console.log("Re-sync done");
+// });
+
 export default sequelize;
